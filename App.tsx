@@ -3,9 +3,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PhotosScreen from './src/screens/PhotosScreen';
 import PhotoDetailScreen from './src/screens/PhotoDetailScreen';
-import SearchScreen from './src/screens/SearchScreen';
-import LibraryScreen from './src/screens/LibraryScreen';
-import SharingScreen from './src/screens/SharingScreen';
+// import SearchScreen from './src/screens/SearchScreen';
+// import LibraryScreen from './src/screens/LibraryScreen';
+// import SharingScreen from './src/screens/SharingScreen';
 
 export type RootStackParamList = {
   Photos: undefined;
@@ -35,16 +35,16 @@ export default function App() {
         <Stack.Screen 
           name="Photos" 
           component={PhotosScreen}
-          options={{ title: 'Google Photos' }}
+          options={{ title: 'Photos' }}
         />
         <Stack.Screen 
           name="PhotoDetail" 
           component={PhotoDetailScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="Search" component={SearchScreen} />
+        {/* <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen name="Library" component={LibraryScreen} />
-        <Stack.Screen name="Sharing" component={SharingScreen} />
+        <Stack.Screen name="Sharing" component={SharingScreen} /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );
