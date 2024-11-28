@@ -4,8 +4,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
 import PhotoGrid from '../components/PhotoGrid';
 import BottomNav from '../components/BottomNav';
-import UploadButton from '../components/UploadButton';
+import BackupButton from '../components/BackupButton';
 import * as MediaLibrary from 'expo-media-library';
+import { useBackupService } from '../hooks/useBackupService';
 
 type PhotosScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Photos'>;
@@ -16,7 +17,10 @@ export default function PhotosScreen({ navigation }: PhotosScreenProps) {
   const [refreshing, setRefreshing] = useState(false);
   const [hasPermission, setHasPermission] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUploading, setIsUploading] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]); // Array of selected photo IDs
+
+  // Use backup service hook
+  const { bulkUpload, isUploading, progress } = useBackupService();
 
   const fetchPhotos = async () => {
     const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -33,7 +37,7 @@ export default function PhotosScreen({ navigation }: PhotosScreenProps) {
       const album = await MediaLibrary.getAssetsAsync({
         first: 50,
         mediaType: 'photo',
-        sortBy: [['creationTime', false]],
+        sortBy: [['creationTime', false]]
       });
 
       if (album.assets && album.assets.length > 0) {
@@ -66,27 +70,25 @@ export default function PhotosScreen({ navigation }: PhotosScreenProps) {
     fetchPhotos();
   }, []);
 
-  const handleUpload = async (photoId: string) => {
-    const photo = photos.find(p => p.id === photoId);
-    if (!photo) return;
-
-    try {
-      setIsUploading(true); // Set uploading state to true before starting
-      const filename = `${Date.now()}-${photo.filename}`;
-      // Assuming `uploadPhoto` is a function to handle uploading logic.
-      // Replace with your implementation if needed.
-      await uploadPhoto(photo.uri, filename);
-    } catch (error) {
-      console.error('Error uploading:', error);
-    } finally {
-      setIsUploading(false); // Set uploading state back to false after completion
-    }
+  const toggleSelection = (id: string) => {
+    setSelectedPhotos((prevSelected) => {
+      if (prevSelected.includes(id)) {
+        return prevSelected.filter(photoId => photoId !== id);
+      } else {
+        return [...prevSelected, id];
+      }
+    });
   };
 
-  const handlePhotoPress = (id: string) => {
-    const selectedPhoto = photos.find(photo => photo.id === id);
-    if (selectedPhoto) {
-      navigation.navigate('PhotoDetail', { id: selectedPhoto.id, uri: selectedPhoto.uri });
+  const handleUploadSelected = async () => {
+    try {
+      const selectedAssets = selectedPhotos.map((photoId) =>
+        photos.find((photo) => photo.id === photoId)
+      ).filter((photo) => photo !== undefined) as MediaLibrary.Asset[];
+
+      await bulkUpload(selectedAssets);
+    } catch (error) {
+      console.error('Error uploading selected photos:', error);
     }
   };
 
@@ -116,13 +118,15 @@ export default function PhotosScreen({ navigation }: PhotosScreenProps) {
     <View style={styles.container}>
       <PhotoGrid
         photos={photos}
-        onPhotoPress={handlePhotoPress}
-        onPhotoLongPress={handleUpload}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        onPhotoPress={(id) => navigation.navigate('PhotoDetail', { id })}
+        selectedPhotos={selectedPhotos}
+        toggleSelection={toggleSelection}
       />
-      <UploadButton isUploading={isUploading} />
+      <BackupButton
+        onPress={handleUploadSelected}
+        isUploading={isUploading}
+        progress={progress}
+      />
       <BottomNav currentTab="photos" navigation={navigation} />
     </View>
   );

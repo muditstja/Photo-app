@@ -3,7 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Asset } from 'expo-media-library';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'http://192.168.1.3:3001';
 const BACKUP_STATUS_KEY = '@backup_status';
 
 interface BackupRecord {
