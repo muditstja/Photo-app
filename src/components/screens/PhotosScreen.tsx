@@ -13,7 +13,7 @@ type PhotosScreenProps = {
 export function PhotosScreen({ navigation }: PhotosScreenProps) {
     return (
         <gridLayout rows="*, auto">
-            <PhotoGrid row={0} onPhotoPress={(id) => navigation.navigate("PhotoDetail", { id })} />
+            <PhotoGrid row={0} onPhotoPress={(id: any) => navigation.navigate("PhotoDetail", { id })} />
             <BottomNav row={1} currentTab="photos" navigation={navigation} />
         </gridLayout>
     );

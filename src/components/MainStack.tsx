@@ -2,10 +2,10 @@ import { BaseNavigationContainer } from '@react-navigation/core';
 import * as React from "react";
 import { stackNavigatorFactory } from "react-nativescript-navigation";
 import { PhotosScreen } from "./screens/PhotosScreen";
-import { PhotoDetailScreen } from "./screens/PhotoDetailScreen";
-import { SearchScreen } from "./screens/SearchScreen";
-import { LibraryScreen } from "./screens/LibraryScreen";
-import { SharingScreen } from "./screens/SharingScreen";
+import { PhotoDetailScreen } from "../screens/PhotoDetailScreen";
+// import { SearchScreen } from "./screens/SearchScreen";
+// import { LibraryScreen } from "./screens/LibraryScreen";
+// import { SharingScreen } from "./screens/SharingScreen";
 
 const StackNavigator = stackNavigatorFactory();
 

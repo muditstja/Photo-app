@@ -4,34 +4,34 @@ import {
   Image,
   StyleSheet,
   Dimensions,
-  TouchableOpacity,
+  Text,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
-import * as MediaLibrary from 'expo-media-library';
 
 type PhotoDetailScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'PhotoDetail'>;
   route: RouteProp<RootStackParamList, 'PhotoDetail'>;
 };
 
-export default function PhotoDetailScreen({ navigation, route }: PhotoDetailScreenProps) {
-  const [photo, setPhoto] = React.useState<MediaLibrary.Asset | null>(null);
+export default function PhotoDetailScreen({ route }: PhotoDetailScreenProps) {
+  const { uri } = route.params;
 
-  React.useEffect(() => {
-    (async () => {
-      const asset = await MediaLibrary.getAssetInfoAsync(route.params.id);
-      setPhoto(asset);
-    })();
-  }, [route.params.id]);
+  console.log('Photo URI:', uri);
 
-  if (!photo) return null;
+  if (!uri) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ color: 'white' }}>Error: URI not found</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: photo.uri }}
+        source={{ uri }}
         style={styles.image}
         resizeMode="contain"
       />
@@ -43,6 +43,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   image: {
     width: Dimensions.get('window').width,

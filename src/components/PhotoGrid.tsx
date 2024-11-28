@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FlatList,
   Image,
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  RefreshControl,
+  View,
+  ActivityIndicator,
 } from 'react-native';
-import { Asset } from 'expo-media-library';
+import { Asset, getAssetInfoAsync } from 'expo-media-library';
 
 interface PhotoGridProps {
   photos: Asset[];
@@ -28,18 +29,53 @@ export default function PhotoGrid({
   refreshControl,
   onEndReached,
 }: PhotoGridProps) {
-  const renderItem = ({ item }: { item: Asset }) => (
-    <TouchableOpacity
-      onPress={() => onPhotoPress(item.id)}
-      onLongPress={() => onPhotoLongPress?.(item.id)}
-      style={styles.photoContainer}
-    >
-      <Image
-        source={{ uri: item.uri }}
-        style={styles.photo}
-      />
-    </TouchableOpacity>
-  );
+  const [convertedUris, setConvertedUris] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    const convertUris = async () => {
+      const newUris: { [key: string]: string } = {};
+      for (const photo of photos) {
+        if (photo.uri.startsWith('ph://')) {
+          try {
+            const assetInfo = await getAssetInfoAsync(photo.id);
+            if (assetInfo.localUri) {
+              newUris[photo.id] = assetInfo.localUri;
+            } else {
+              newUris[photo.id] = photo.uri; // fallback in case the localUri is not available
+            }
+          } catch (error) {
+            console.error('Error converting URI:', error);
+            newUris[photo.id] = photo.uri; // fallback
+          }
+        } else {
+          newUris[photo.id] = photo.uri;
+        }
+      }
+      setConvertedUris(newUris);
+    };
+    convertUris();
+  }, [photos]);
+
+  const renderItem = ({ item }: { item: Asset }) => {
+    const uri = convertedUris[item.id];
+    if (!uri) {
+      return (
+        <View style={[styles.photoContainer, styles.loadingContainer]}>
+          <ActivityIndicator size="small" color="#000" />
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        onPress={() => onPhotoPress(item.id)}
+        onLongPress={() => onPhotoLongPress?.(item.id)}
+        style={styles.photoContainer}
+      >
+        <Image source={{ uri }} style={styles.photo} />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <FlatList
@@ -63,6 +99,10 @@ const styles = StyleSheet.create({
     width: tileSize,
     height: tileSize,
     padding: 1,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   photo: {
     flex: 1,
