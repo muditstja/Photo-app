@@ -57,7 +57,7 @@ app.post('/upload', upload.single('photo'), asyncHandler(async (req, res) => {
 app.post('/upload/bulk', upload.array('photos', 50), asyncHandler(async (req, res) => {
   const results = await Promise.all(
     req.files.map(async (file, index) => {
-      const metadata = JSON.parse(req.body.metadata[index]);
+      const metadata = JSON.parse(req.body.metadata)[index];
       await addBackupRecord({
         originalId: metadata.originalId,
         serverPath: file.path,
